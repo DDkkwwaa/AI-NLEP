@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <title>AI Studio</title>
+    <link rel="stylesheet" href="https://unpkg.zhimg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+
+        #app {
+            text-align: center;
+            background-color: #fff; /* 背景颜色 */
+            background-image: url('C:\Users\LON\Desktop\Projects\back.png'); /* 添加背景图片 */
+            background-repeat: no-repeat; /* 图片不重复 */
+            background-position: center; /* 图片居中 */
+            background-size: cover; /* 图片覆盖整个容器 */
+            padding: 100px;
+            border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+
+        /* 悬停动画样式 */
+        .el-button {
+            transition: background-color 0.3s ease, transform 0.3s ease; /* 动画过渡效果 */
+        }
+        .el-button:hover {
+            background-color: #003366; /* 悬停时的背景色 */
+            transform: scale(1.5); /* 悬停时稍微放大 */
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <h1>普通文本识别</h1>
+    <div class="upload-demo">
+        <el-upload
+                action="http://127.0.0.1:8080/pic"
+                :on-success="dealPICSuccess">
+            <el-button size="small" type="primary">点击上传</el-button>
+            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+        </el-upload>
+    </div>
+    <el-input
+            type="textarea"
+            :rows="10"
+            placeholder="识别结果"
+            v-model="words">
+    </el-input>
+    <h1>图像识别</h1>
+    <div class="upload-demo">
+        <el-upload
+                action="http://127.0.0.1:8080/img"
+                :on-success="dealIMGSuccess">
+            <el-button size="small" type="primary">点击上传</el-button>
+            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+        </el-upload>
+    </div>
+    <el-input
+            type="textarea"
+            :rows="10"
+            placeholder="识别结果"
+            v-model="imgRecognition">
+    </el-input>
+    <h1>NLP纠错</h1>
+    <el-input
+            type="textarea"
+            :rows="5"
+            placeholder="输入文本"
+            v-model="NLP_input">
+    </el-input>
+    <el-input
+            type="textarea"
+            :rows="5"
+            placeholder="识别结果"
+            v-model="NLP_output">
+    </el-input>
+    <el-button size="small" type="primary" @click="NLP_correction">提交NLP处理</el-button>
+
+    <h1>NLP情感分析</h1>
+    <el-input
+            type="textarea"
+            :rows="5"
+            placeholder="输入文本"
+            v-model="NLP_emo_input">
+    </el-input>
+    <el-input
+            type="textarea"
+            :rows="5"
+            placeholder="处理结果"
+            v-model="NLP_emo_output">
+    </el-input>
+    <el-button size="small" type="primary" @click="NLP_emo">提交NLP处理</el-button>
+
+</div>
+
+<!-- import Vue before Element -->
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+<!-- import JavaScript -->
+<script src="https://unpkg.zhimg.com/element-ui/lib/index.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/axios/1.2.2/axios.min.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            words: '',
+            imgRecognition: '',
+            NLP_input: '',
+            NLP_output: '',
+            NLP_emo_input: '',
+            NLP_emo_output: ''
+        },
+        methods: {
+            dealPICSuccess(res, file) {
+                console.log(res);
+                console.log(file);
+                this.words = res;
+            },
+            NLP_emo(res, file) {
+                axios.get("http://localhost:8080/emo",{params:{
+                        text:this.NLP_emo_input
+                    }}).then(res=>{
+                    this.NLP_emo_output = JSON.stringify(res.data.items[0].label).replace(/"/g, '');
+                    console.log(res.data.items[0].label);
+                    console.log(res.data);
+                })
+            },
+            dealIMGSuccess(res, file) {
+                console.log(res);
+                console.log(file);
+                this.imgRecognition = JSON.stringify(res.result);
+            },
+            NLP_correction(){
+                axios.get("http://localhost:8080/correction",{params:{
+                        text:this.NLP_input
+                    }}).then(res=>{
+                    this.NLP_output = JSON.stringify(res.data.item.correct_query).replace(/"/g, '').replace(/"\n/g, '');
+                    console.log(res.data);
+                })
+            }
+        }
+    })
+</script>
+
+
+<div id="gtx-trans" style="position: absolute; left: 1007px; top: 95.875px;"><div class="gtx-trans-icon"></div></div></body></html>
